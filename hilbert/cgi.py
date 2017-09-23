@@ -24,7 +24,7 @@ def send_image(image):
     sys.stdout.buffer.flush()
 
 
-def route_main(n, image_size, enable_grid, enable_stream):
+def route_main(n, image_size, enable_grid):
     print('content-type: text/html')
     print()
     print('''\
@@ -62,13 +62,6 @@ def route_main(n, image_size, enable_grid, enable_stream):
         print('''<input type="checkbox" name="enable_grid">''')
     print('''</label>''')
 
-    print('''<label>Enable stream''')
-    if enable_stream:
-        print('''<input type="checkbox" name="enable_stream" checked>''')
-    else:
-        print('''<input type="checkbox" name="enable_stream">''')
-    print('''</label>''')
-
     print('''<input type=submit value="Apply"></form>''')
 
     if n > MIN_N:
@@ -78,9 +71,8 @@ def route_main(n, image_size, enable_grid, enable_stream):
                 n=n - 1,
                 enable_grid='on' if enable_grid else 'off'))
 
-    print('''<img src="?mode={mode}&image_size={image_size}&n={n}&enable_grid={enable_grid}">'''
+    print('''<img src="?mode=image&image_size={image_size}&n={n}&enable_grid={enable_grid}">'''
         .format(
-            mode='stream' if enable_stream else 'image',
             image_size=image_size,
             n=n,
             enable_grid='on' if enable_grid else 'off'))
@@ -100,21 +92,6 @@ def route_main(n, image_size, enable_grid, enable_stream):
 def route_image(n, image_size, enable_grid):
     image = create_hilbert_image(image_size, n, enable_grid)
     send_image(image)
-
-
-def route_stream(n, image_size, enable_grid):
-    print('X-Accel-Buffering: no');
-    print('Content-type: multipart/x-mixed-replace; boundary=endofsection');
-    print()
-    print('--endofsection')
-
-    def write_image(image):
-        send_image(image)
-        print('--endofsection')
-        sys.stdout.flush()
-        time.sleep(1)
-
-    create_hilbert_image(image_size, n, enable_grid, on_image_update=write_image)
 
 
 def main_cgi():
@@ -146,17 +123,10 @@ def main_cgi():
     except KeyError:
         enable_grid = DEFAULT_ENABLE_GRID
 
-    try:
-        enable_stream = fs['enable_stream'].value == 'on'
-    except KeyError:
-        enable_stream = DEFAULT_ENABLE_STREAM
-
     if mode == 'main':
-        route_main(n, image_size, enable_grid, enable_stream)
+        route_main(n, image_size, enable_grid)
     elif mode == 'image':
         route_image(n, image_size, enable_grid)
-    elif mode == 'stream':
-        route_stream(n, image_size, enable_grid)
     else:
         print('Status: 501')
         print()
