@@ -1,4 +1,5 @@
 import itertools
+import os
 from PIL import Image, ImageDraw
 import sys
 import time
@@ -246,12 +247,17 @@ def main_cgi():
         n = min(max(MIN_N, n), MAX_N)
 
     try:
-        enable_grid = bool(fs['enable_grid'].value)
+        enable_grid = fs['enable_grid'].value == 'on'
     except KeyError:
         enable_grid = DEFAULT_ENABLE_GRID
 
+    # print('content-type: text/plain')
+    # print()
+    # print(fs['enable_grid'].value)
+    # return
+
     try:
-        enable_stream = bool(fs['enable_stream'].value)
+        enable_stream = fs['enable_stream'].value == 'on'
     except KeyError:
         enable_stream = DEFAULT_ENABLE_STREAM
 
@@ -316,14 +322,14 @@ def main_cgi():
 
         if n > MIN_N:
             print('''\
-            <a href="?mode=main&image_size={image_size}&n={n}&enable_grid={enable_grid}">Previous</a>'''.format(image_size=image_size, n=n - 1, enable_grid=enable_grid))
+            <a href="?mode=main&image_size={image_size}&n={n}&enable_grid={enable_grid}">Previous</a>'''.format(image_size=image_size, n=n - 1, enable_grid='on' if enable_grid else 'off'))
 
         print('''\
-            <img src="?mode={mode}&image_size={image_size}&n={n}&enable_grid={enable_grid}">'''.format(mode='stream' if enable_stream else 'image', image_size=image_size, n=n, enable_grid=enable_grid))
+            <img src="?mode={mode}&image_size={image_size}&n={n}&enable_grid={enable_grid}">'''.format(mode='stream' if enable_stream else 'image', image_size=image_size, n=n, enable_grid='on' if enable_grid else 'off'))
 
         if n < MAX_N:
             print('''\
-            <a href="?mode=main&image_size={image_size}&n={n}&enable_grid={enable_grid}">Next</a>'''.format(image_size=image_size, n=n + 1, enable_grid=enable_grid))
+            <a href="?mode=main&image_size={image_size}&n={n}&enable_grid={enable_grid}">Next</a>'''.format(image_size=image_size, n=n + 1, enable_grid='on' if enable_grid else 'off'))
 
         print('''\
     </body>
